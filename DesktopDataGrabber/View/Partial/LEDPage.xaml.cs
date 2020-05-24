@@ -22,10 +22,10 @@ namespace DesktopDataGrabber.View.Partial
     /// </summary>
     public partial class LEDPage : Page
     {
-        public LEDPage(IConfig c)
+        public LEDPage(IConfig c,IPanelLED pl)
         {
             InitializeComponent();
-            DataContext = new LEDViewModel(c);
+            DataContext = new LEDViewModel(c,pl);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace DesktopDataGrabber.Model
          */
         private string GetFileUrl()
         {
-            return "http://" + ip + "/server/chartdata.json";
+            return "http://" + ip + "/api/measure.php";
         }
 
         /**

@@ -81,7 +81,7 @@ namespace DesktopDataGrabber.ViewModel
         public PrzebiegiViewModel(IConfig configuration)
         {
             config = configuration;
-            DataPlotModel = new PlotModel { Title = "Temperatura" };
+            DataPlotModel = new PlotModel { Title = "Przebiegi czasowe" };
 
             DataPlotModel.Axes.Add(new LinearAxis()
             {
@@ -95,14 +95,39 @@ namespace DesktopDataGrabber.ViewModel
             DataPlotModel.Axes.Add(new LinearAxis()
             {
                 Position = AxisPosition.Left,
-                Minimum = -1,
-                Maximum = 1,
-                Key = "Vertical",
-                Unit = "-",
-                Title = "Random value"
+                Minimum = -100,
+                Maximum = 100,
+                Key = "Temp",
+                Unit = "C",
+                Title = "temperature",
+                TitlePosition=0.3
+            });
+            DataPlotModel.Axes.Add(new LinearAxis()
+            {
+                Position = AxisPosition.Right,
+                Minimum = 0,
+                Maximum = 4000,
+                Key = "Press",
+                Unit = "hPa",
+                Title = "preasure"
+            });
+            DataPlotModel.Axes.Add(new LinearAxis()
+            {
+                Position = AxisPosition.Left,
+                Minimum = 0,
+                Maximum = 100,
+                Key = "Hum",
+                Unit = "%",
+                Title = "humidity",
+                AxisDistance = 30.0,
+                TitlePosition=0.7,
+                TitleClippingLength =1.2,
+                Angle=40,
             });
 
-            DataPlotModel.Series.Add(new LineSeries() { Title = "random data series", Color = OxyColor.Parse("#FFFF0000") });
+            DataPlotModel.Series.Add(new LineSeries() { Title = "Temperature", Color = OxyColor.Parse("#FFFF00FF"),YAxisKey = "Temp", XAxisKey= "Horizontal" });
+            DataPlotModel.Series.Add(new LineSeries() { Title = "Preasure", Color = OxyColor.Parse("#FFFFFF00"), YAxisKey = "Press", XAxisKey = "Horizontal" });
+            DataPlotModel.Series.Add(new LineSeries() { Title = "Humidity", Color = OxyColor.Parse("#FFFF0000"), YAxisKey = "Hum", XAxisKey = "Horizontal" });
 
             StartButton = new ButtonCommand(StartTimer);
             StopButton = new ButtonCommand(StopTimer);
@@ -120,15 +145,22 @@ namespace DesktopDataGrabber.ViewModel
           * @param t X axis data: Time stamp [ms].
           * @param d Y axis data: Real-time measurement [-].
           */
-        private void UpdatePlot(double t, double d)
+        private void UpdatePlot(double t, double d,double p,double h)
         {
-            LineSeries lineSeries = DataPlotModel.Series[0] as LineSeries;
+            LineSeries lineSeriesTemp = DataPlotModel.Series[0] as LineSeries;
+            lineSeriesTemp.Points.Add(new DataPoint(t, d));
+            if (lineSeriesTemp.Points.Count > config.GetSettings().MaxSampleNumber)
+                lineSeriesTemp.Points.RemoveAt(0);
 
-            lineSeries.Points.Add(new DataPoint(t, d));
+            LineSeries lineSeriesPress = DataPlotModel.Series[1] as LineSeries;
+            lineSeriesPress.Points.Add(new DataPoint(t, p));
+            if (lineSeriesPress.Points.Count > config.GetSettings().MaxSampleNumber)
+                lineSeriesPress.Points.RemoveAt(0);
 
-            if (lineSeries.Points.Count > config.GetSettings().MaxSampleNumber)
-                lineSeries.Points.RemoveAt(0);
-
+            LineSeries lineSeriesHum = DataPlotModel.Series[2] as LineSeries;
+            lineSeriesHum.Points.Add(new DataPoint(t, h));
+            if (lineSeriesHum.Points.Count > config.GetSettings().MaxSampleNumber)
+                lineSeriesHum.Points.RemoveAt(0);
             if (t >= config.GetSettings().XAxisMax)
             {
                 DataPlotModel.Axes[0].Minimum = (t - config.GetSettings().XAxisMax);
@@ -162,7 +194,7 @@ namespace DesktopDataGrabber.ViewModel
             {
 #if DYNAMIC
                 dynamic resposneJson = JObject.Parse(responseText);
-                UpdatePlot(timeStamp / 1000.0, (double)resposneJson.data);
+                UpdatePlot(timeStamp / 1000.0, (double)resposneJson.temperature, (double)resposneJson.pressure, (double)resposneJson.humidity);
 #else
                 ServerData resposneJson = JsonConvert.DeserializeObject<ServerData>(responseText);
                 UpdatePlot(timeStamp / 1000.0, resposneJson.data);

@@ -39,7 +39,8 @@ namespace DesktopDataGrabber
         }
         private void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IConfig, Config>();
+            services.AddSingleton<IConfig, Config>();
+            services.AddTransient<IPanelLED, PanelLED>();
             services.AddTransient(typeof(MainWindow));
         }
     }

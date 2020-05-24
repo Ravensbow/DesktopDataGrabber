@@ -20,9 +20,11 @@ namespace DesktopDataGrabber.ViewModel
         Dictionary<Tuple<int, int>, Button> panel = new Dictionary<Tuple<int, int>, Button>();
 
         IConfig configService;
-        public LEDViewModel(IConfig c)
+        IPanelLED panelLEDService;
+        public LEDViewModel(IConfig c, IPanelLED pl)
         {
             configService = c;
+            panelLEDService = pl;
             InitializePanelLed();
         }
 
@@ -30,7 +32,10 @@ namespace DesktopDataGrabber.ViewModel
         private void InitializePanelLed()
         {
             var bc = new BrushConverter();
-            int[] sensLEDs= {65535,65535,65535,65535,65535,65535,65535,65535,65535,65535,16744703,16744703,16744703,16744703,65535,65535,65535,16744703,16744703,16744703,16744703,16744703,16744703,65535,65535,16711935,16744703,0,16744703,0,16744703,65535,16711935,16744703,16744703,8388863,16744703,8388863,16744703,16711935,16711935,16711935,16711935,16744703,16744703,16744703,16711935,16711935,65535,12976326,16711935,16711935,16744703,16744703,12976326,65535,65280,12976326,12976326,12976326,65280,12976326,12976326,65280};
+            //int[] sensLEDs= {65535,65535,65535,65535,65535,65535,65535,65535,65535,65535,16744703,16744703,16744703,16744703,65535,65535,65535,16744703,16744703,16744703,16744703,16744703,16744703,65535,65535,16711935,16744703,0,16744703,0,16744703,65535,16711935,16744703,16744703,8388863,16744703,8388863,16744703,16711935,16711935,16711935,16711935,16744703,16744703,16744703,16711935,16711935,65535,12976326,16711935,16711935,16744703,16744703,12976326,65535,65280,12976326,12976326,12976326,65280,12976326,12976326,65280};
+            int[] sensLEDs = panelLEDService.GetLEDsState();
+            if (sensLEDs == null)
+                return;
             Grid grid = new Grid() { VerticalAlignment=VerticalAlignment.Center,HorizontalAlignment=HorizontalAlignment.Center};
             for (int i =0;i<8; i++)
             {
@@ -55,6 +60,7 @@ namespace DesktopDataGrabber.ViewModel
                 }    
             }
             PanelLed = grid;
+            int[] b = buttonToArray();
         }
 
         private int[] buttonToArray()
@@ -67,7 +73,7 @@ namespace DesktopDataGrabber.ViewModel
                     Button b;
                     if (panel.TryGetValue(Tuple.Create(i, j), out b))
                     {
-                        string s = ((SolidColorBrush)b.Background).Color.ToString();
+                        string s = ((SolidColorBrush)b.Background).Color.ToString().Replace("#","").Substring(2);
                         temp[i * 8 + j] = int.Parse(s, System.Globalization.NumberStyles.HexNumber);
                     }
                 }

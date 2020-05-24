@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace DesktopDataGrabber.Service
 {
-    interface IPanelLED
+    public interface IPanelLED
     {
-        Task<int[]> GetLEDsState();
+        int[] GetLEDsState();
         Task<bool> SetLEDs(int[] leds);
         bool DrawSymbol();
     }

@@ -37,13 +37,15 @@ namespace DesktopDataGrabber.ViewModel
 
         #region Fields
         IConfig config;
+        IPanelLED panelLedService;
         #endregion
 
-        public MainViewModel(IConfig c)
+        public MainViewModel(IConfig c, IPanelLED pl)
         {
             ChartButton = new ButtonCommand(GoToChart);
             DisplayButton = new ButtonCommand(GoToLED);
             config = c;
+            panelLedService = pl;
             page = new PrzebiegiPage(c);
         }
 
@@ -55,7 +57,7 @@ namespace DesktopDataGrabber.ViewModel
         }
         private void GoToLED()
         {
-            page = new LEDPage(config);
+            page = new LEDPage(config,panelLedService);
             OnPropertyChanged("page");
         }
 

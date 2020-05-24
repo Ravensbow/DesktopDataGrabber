@@ -33,8 +33,11 @@ namespace DesktopDataGrabber.Service
         public PanelLED(IConfig c)
         {
             config = c;
-            client = new HttpClient();
-            client.BaseAddress = new Uri($"{"http://" + config.GetSettings().IpAddress}/");
+            client = new HttpClient()
+            {
+                BaseAddress = new Uri($"{"http://" + config.GetSettings().IpAddress}/"),
+                Timeout = TimeSpan.FromSeconds(5)
+            };
         }
 
         public bool DrawSymbol()
@@ -42,14 +45,19 @@ namespace DesktopDataGrabber.Service
             throw new NotImplementedException();
         }
 
-        public async Task<int[]> GetLEDsState()
+        public int[] GetLEDsState()
         {
             if (IsConnected())
             {
+                client = new HttpClient() {
+                    BaseAddress = new Uri($"{"http://" + config.GetSettings().IpAddress}/"),
+                    Timeout = TimeSpan.FromSeconds(2)
+                };
+
                 try
                 {
-                    var json = await client.GetStringAsync($"api/LED/GetLEDs");
-                    return await Task.Run(() => JsonConvert.DeserializeObject<int[]>(json));
+                    var json = client.GetStringAsync($"api/led.php").Result;
+                    return  JsonConvert.DeserializeObject<int[]>(json);
                 }
                 catch (WebException e)
                 {
@@ -73,10 +81,23 @@ namespace DesktopDataGrabber.Service
         {
             if (IsConnected())
             {
+                client = new HttpClient()
+                {
+                    BaseAddress = new Uri($"{"http://" + config.GetSettings().IpAddress}/"),
+                    Timeout = TimeSpan.FromSeconds(2)
+                };
                 try
                 {
-                    var json = await client.GetStringAsync($"api/LED/SetLEDs?data={Newtonsoft.Json.JsonConvert.SerializeObject(leds)}");
-                    return await Task.Run(() => JsonConvert.DeserializeObject<bool>(json));
+                    //var json = await client.GetStringAsync($"api/LED/SetLEDs?data={Newtonsoft.Json.JsonConvert.SerializeObject(leds)}");
+                    //return await Task.Run(() => JsonConvert.DeserializeObject<bool>(json));
+                    var content = new FormUrlEncodedContent(new[]
+                    {
+                        new KeyValuePair<string, string>("leds", JsonConvert.SerializeObject(leds))
+                    });
+                    var result = await client.PostAsync("api/led.php", content);
+                    string resultContent = await result.Content.ReadAsStringAsync();
+                    Console.WriteLine(resultContent);
+                    return true;
                 }
                 catch (WebException e)
                 {
