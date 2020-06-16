@@ -9,15 +9,26 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.IO;
+using DesktopDataGrabber.Model;
+using System.Windows.Media.Imaging;
+using DesktopDataGrabber.Tools;
 
 namespace DesktopDataGrabber.ViewModel
 {
     class LEDViewModel : INotifyPropertyChanged
     {
         public Grid PanelLed { get; set; }
+        public Grid ButtonPanel{ get; set; }
+        public Color ColorSelected { get; set; }
+
+        public ButtonCommand Set{ get; set; }
 
         List<Button> chosenLeds = new List<Button>();
         Dictionary<Tuple<int, int>, Button> panel = new Dictionary<Tuple<int, int>, Button>();
+        List<LedMap> LedMaps = new List<LedMap>();
 
         IConfig configService;
         IPanelLED panelLEDService;
@@ -25,15 +36,15 @@ namespace DesktopDataGrabber.ViewModel
         {
             configService = c;
             panelLEDService = pl;
-            InitializePanelLed();
+            InitializePanelLed(panelLEDService.GetLEDsState());
+            SetButtonPanel();
+            Set = new ButtonCommand(SetColor);
+            ColorSelected = Colors.Blue;
         }
 
-
-        private void InitializePanelLed()
+        private void InitializePanelLed(int[] sensLEDs)
         {
             var bc = new BrushConverter();
-            //int[] sensLEDs= {65535,65535,65535,65535,65535,65535,65535,65535,65535,65535,16744703,16744703,16744703,16744703,65535,65535,65535,16744703,16744703,16744703,16744703,16744703,16744703,65535,65535,16711935,16744703,0,16744703,0,16744703,65535,16711935,16744703,16744703,8388863,16744703,8388863,16744703,16711935,16711935,16711935,16711935,16744703,16744703,16744703,16711935,16711935,65535,12976326,16711935,16711935,16744703,16744703,12976326,65535,65280,12976326,12976326,12976326,65280,12976326,12976326,65280};
-            int[] sensLEDs = panelLEDService.GetLEDsState();
             if (sensLEDs == null)
                 return;
             Grid grid = new Grid() { VerticalAlignment=VerticalAlignment.Center,HorizontalAlignment=HorizontalAlignment.Center};
@@ -53,6 +64,7 @@ namespace DesktopDataGrabber.ViewModel
                         MinWidth=30,
                         Background = new SolidColorBrush(Color.FromRgb((byte)((sensLEDs[i * 8 + j] >> 16) & 0xFF), (byte)((sensLEDs[i * 8 + j] >> 8) & 0xFF), (byte)((sensLEDs[i * 8 + j] >> 0) & 0xFF)))
                     };
+                    but.Click += Button_Clicked;
                     Grid.SetRow(but,i);
                     Grid.SetColumn(but,j);
                     grid.Children.Add(but);
@@ -60,7 +72,58 @@ namespace DesktopDataGrabber.ViewModel
                 }    
             }
             PanelLed = grid;
-            int[] b = buttonToArray();
+        }
+        private void SetPanelLed(int[] sensLEDs)
+        {
+            for(int i =0;i<8; i++)
+            {
+                for(int j =0;j<8; j++)
+                {
+                    if (panel.TryGetValue(Tuple.Create(i, j), out Button b))
+                    {
+                        b.Background = new SolidColorBrush(Color.FromRgb((byte)((sensLEDs[i * 8 + j] >> 16) & 0xFF), (byte)((sensLEDs[i * 8 + j] >> 8) & 0xFF), (byte)((sensLEDs[i * 8 + j] >> 0) & 0xFF)));
+                    }
+                }
+            }
+        }
+
+        private void SetButtonPanel()
+        {
+            string json = File.ReadAllText("Resource/ledmaps.json");
+            var ledmaps = JsonSerializer.Deserialize<List<LedMap>>(json);
+            LedMaps = ledmaps;
+            Grid grid = new Grid() { Margin = new Thickness(90,0,0,0), VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+            for (int i = 0; i < ledmaps.Count; i++)
+            {
+                grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+                if (i%2==0)
+                    grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+                var butt = new Button
+                {
+                    Margin = new Thickness(5, 5, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Style = null,
+                    MaxHeight = 32,
+                    MaxWidth = 32,
+                    Name = "a"+ i.ToString(),
+                    
+
+                };
+                BitmapSource bitmapSource = BitmapSource.
+                    Create(8, 8, 300, 300, PixelFormats.Bgr32, BitmapPalettes.WebPalette, ledmaps[i].Map.ToArray(), 32);
+                butt.Content = new Image() { Source = bitmapSource };
+                butt.ToolTip = new ToolTip { Content = ledmaps[i].Name};
+                butt.Click += (o, e) =>
+                {
+                    var But = o as Button;
+                    SetPanelLed(ledmaps[int.Parse(But.Name.Remove(0,1))].Map);
+                };
+                Grid.SetRow(butt, (int)(i/2));
+                Grid.SetColumn(butt, i%2);
+                grid.Children.Add(butt);
+            }
+            ButtonPanel = grid;
         }
 
         private int[] buttonToArray()
@@ -79,6 +142,41 @@ namespace DesktopDataGrabber.ViewModel
                 }
             }
             return temp;
+        }
+
+        private void clearChosen()
+        {
+            chosenLeds.ForEach(b => b.BorderThickness = new Thickness(0,0,0,0));
+            chosenLeds.Clear();
+        }
+
+        private void SetColor()
+        {
+            chosenLeds.ForEach(b => b.Background = new SolidColorBrush(ColorSelected));
+            var a = buttonToArray();
+            panelLEDService.SetLEDs(buttonToArray());
+        }
+
+        private void Button_Clicked(object sender, EventArgs e)
+        {
+            var but = sender as Button;
+            var ee = e as System.Windows.Input.KeyEventArgs;
+            if ( ee!= null&&ee.Key ==System.Windows.Input.Key.LeftShift)
+            {
+                but.BorderThickness = new Thickness(5, 5, 5, 5);
+                but.BorderBrush = new SolidColorBrush(Colors.LightSkyBlue);
+                chosenLeds.Add(but);
+            }
+            else
+            {
+                if (chosenLeds.Count == 0 || chosenLeds.Last() != but)
+                {
+                    clearChosen();
+                    but.BorderThickness = new Thickness(5, 5, 5, 5);
+                    but.BorderBrush = new SolidColorBrush(Colors.LightSkyBlue);
+                    chosenLeds.Add(but);
+                }
+            }
         }
 
         #region PropertyChanged

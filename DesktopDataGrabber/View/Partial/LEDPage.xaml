@@ -22,7 +22,8 @@
         </Grid.ColumnDefinitions>
         <TextBlock Grid.Row="1" HorizontalAlignment="Center" FontSize="32" Margin="0 -40 0 20">Panel LED</TextBlock>
         <ContentPresenter Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding PanelLed}"></ContentPresenter>
-        <xctk:ColorPicker MinWidth="120" VerticalAlignment="Top" Margin="100 10 10 10" Grid.Row="2" Grid.Column="2" Name="cp" DisplayColorAndName="True" AvailableColorsSortingMode="HueSaturationBrightness" ></xctk:ColorPicker>
-        <Button Grid.Row="3" VerticalAlignment="Bottom" Margin="100 0 0 0 " Grid.Column="2">Ustwa</Button>
+        <xctk:ColorPicker SelectedColor="{Binding ColorSelected,  Mode=TwoWay}"  MinWidth="120" VerticalAlignment="Top" Margin="100 10 10 10" Grid.Row="2" Grid.Column="2" Name="cp" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" ></xctk:ColorPicker>
+        <ContentPresenter Grid.Column="2" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding ButtonPanel}"></ContentPresenter>
+        <Button Grid.Row="3" VerticalAlignment="Bottom" Margin="100 0 0 0 " Grid.Column="2" Command="{Binding Set}">Ustaw</Button>
     </Grid>
 </Page>

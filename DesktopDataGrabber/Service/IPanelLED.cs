@@ -9,6 +9,5 @@ namespace DesktopDataGrabber.Service
     {
         int[] GetLEDsState();
         Task<bool> SetLEDs(int[] leds);
-        bool DrawSymbol();
     }
 }
