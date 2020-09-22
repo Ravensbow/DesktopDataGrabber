@@ -41,6 +41,7 @@ namespace DesktopDataGrabber
         {
             services.AddSingleton<IConfig, Config>();
             services.AddTransient<IPanelLED, PanelLED>();
+            services.AddTransient<IDataMeasure, DataMeasure>();
             services.AddTransient(typeof(MainWindow));
         }
     }

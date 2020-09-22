@@ -76,7 +76,7 @@
                 Height="30" 
                 Width="150"
                 Margin="0,10,30,10" 
-                Command="{Binding StartButton}" HorizontalAlignment="Right">
+                Command="{Binding StartButtonAsync}" HorizontalAlignment="Right">
                 START
             </Button>
             <Button 
@@ -84,7 +84,7 @@
                 Height="30" 
                 Width="150" 
                 Margin="0,10,15,10" 
-                Command="{Binding StopButton}">
+                Command="{Binding StopButton2}">
                 STOP
             </Button>
             <Button 

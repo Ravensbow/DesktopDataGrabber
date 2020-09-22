@@ -22,9 +22,9 @@ namespace DesktopDataGrabber.View.Partial
     /// </summary>
     public partial class PrzebiegiPage : Page
     {
-        public PrzebiegiPage(IConfig c)
+        public PrzebiegiPage(IConfig c, IDataMeasure d)
         {
-            DataContext = new PrzebiegiViewModel(c);
+            DataContext = new PrzebiegiViewModel(c,d);
             InitializeComponent();
         }
     }

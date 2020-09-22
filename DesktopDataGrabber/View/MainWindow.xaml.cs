@@ -25,10 +25,10 @@ namespace DesktopDataGrabber.View
     {
         bool isMenuVisible = true;
 
-        public MainWindow(IConfig c, IPanelLED pl)
+        public MainWindow(IConfig c, IPanelLED pl, IDataMeasure dm)
         {
             InitializeComponent();
-            DataContext = new MainViewModel(c,pl);
+            DataContext = new MainViewModel(c,pl,dm);
         }
 
         private void MenuBtn_Click(object sender, RoutedEventArgs e)

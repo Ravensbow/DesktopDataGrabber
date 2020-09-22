@@ -38,21 +38,22 @@ namespace DesktopDataGrabber.ViewModel
         #region Fields
         IConfig config;
         IPanelLED panelLedService;
+        IDataMeasure dataMeasureService; 
         #endregion
 
-        public MainViewModel(IConfig c, IPanelLED pl)
+        public MainViewModel(IConfig c, IPanelLED pl, IDataMeasure dm)
         {
             ChartButton = new ButtonCommand(GoToChart);
             DisplayButton = new ButtonCommand(GoToLED);
             config = c;
             panelLedService = pl;
-            page = new PrzebiegiPage(c);
+            page = new PrzebiegiPage(c,dm);
         }
 
         #region ButtonCommands
         private void GoToChart()
         {
-            page = new PrzebiegiPage(config);
+            page = new PrzebiegiPage(config,dataMeasureService);
             OnPropertyChanged("page");
         }
         private void GoToLED()

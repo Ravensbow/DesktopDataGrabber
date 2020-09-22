@@ -20,7 +20,10 @@ using Newtonsoft.Json.Linq;
 namespace DesktopDataGrabber.ViewModel
 {
     using DesktopDataGrabber.Service;
+    using DesktopDataGrabber.Tools;
     using Model;
+    using System.Collections.Generic;
+
 
     /** 
       * @brief View model for MainWindow.xaml 
@@ -63,26 +66,34 @@ namespace DesktopDataGrabber.ViewModel
                 }
             }
         }
-
+        
         public PlotModel DataPlotModel { get; set; }
         public ButtonCommand StartButton { get; set; }
+        public IAsyncCommand StartButtonAsync{ get; set; }
         public ButtonCommand StopButton { get; set; }
+        public ButtonCommand StopButton2 { get; set; }
         public ButtonCommand UpdateConfigButton { get; set; }
         public ButtonCommand DefaultConfigButton { get; set; }
         #endregion
 
         #region Fields
         private int timeStamp = 0;
+        private bool ploting = false;
         private IConfig config;
+        private IDataMeasure dataMeasureService;
         private Timer RequestTimer;
         private IoTServer Server;
+        private System.Threading.CancellationTokenSource source { get; set; }
+        private System.Threading.CancellationToken cts { get; set; }
         #endregion
 
-        public PrzebiegiViewModel(IConfig configuration)
+        public PrzebiegiViewModel(IConfig configuration, IDataMeasure dataMeasure)
         {
             config = configuration;
+            dataMeasureService = dataMeasure;
             DataPlotModel = new PlotModel { Title = "Przebiegi czasowe" };
-
+            source = new System.Threading.CancellationTokenSource();
+            cts = source.Token;
             DataPlotModel.Axes.Add(new LinearAxis()
             {
                 Position = AxisPosition.Bottom,
@@ -130,7 +141,9 @@ namespace DesktopDataGrabber.ViewModel
             DataPlotModel.Series.Add(new LineSeries() { Title = "Humidity", Color = OxyColor.Parse("#FFFF0000"), YAxisKey = "Hum", XAxisKey = "Horizontal" });
 
             StartButton = new ButtonCommand(StartTimer);
+            StartButtonAsync = new AsyncCommand(UpdatePlotAsync);
             StopButton = new ButtonCommand(StopTimer);
+            StopButton2 = new ButtonCommand(Cancle);
             UpdateConfigButton = new ButtonCommand(UpdateConfig);
             DefaultConfigButton = new ButtonCommand(DefaultConfig);
 
@@ -140,6 +153,44 @@ namespace DesktopDataGrabber.ViewModel
             Server = new IoTServer(IpAddress);
         }
 
+        public async Task UpdatePlotAsync()
+        {
+            while (true)
+            {
+                if (cts.IsCancellationRequested)
+                    return;
+                
+                var measureData = await dataMeasureService.GetMeasureAsync();
+                if (measureData == null)
+                    continue;
+
+                UpdateChart(measureData);
+
+                await Task.Delay(config.GetSettings().SampleTime);
+            }
+        }
+        private void UpdateChart(List<MeasureValues> ms)
+        {
+            var temp = ms.Find(m => m.Name == "Temperatura");
+            var hum = ms.Find(m => m.Name == "Wilgotność");
+            var pres = ms.Find(m => m.Name == "Ciśnienie");
+            if (temp == null || hum == null || pres == null)
+                return;
+            UpdatePlot(timeStamp / 1000.0, (double)temp.Value, (double)pres.Value, (double)hum.Value);
+            timeStamp += config.GetSettings().SampleTime;
+        }
+
+        public void Cancle()
+        {
+            source.Cancel();
+        }
+        public async Task Start()
+        {
+            source = new System.Threading.CancellationTokenSource();
+            cts = source.Token;
+            await UpdatePlotAsync();
+
+        }
         /**
           * @brief Time series plot update procedure.
           * @param t X axis data: Time stamp [ms].
@@ -236,7 +287,7 @@ namespace DesktopDataGrabber.ViewModel
                 DataPlotModel.ResetAllAxes();
             }
         }
-
+        
         /**
          * @brief RequestTimer stop procedure.
          */
