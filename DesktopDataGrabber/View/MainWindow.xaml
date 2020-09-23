@@ -39,8 +39,9 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Button Grid.Row="0" Width="100" Margin="5" IsEnabled="True" Command="{Binding ChartButton}">CHART</Button>
-            <Button Grid.Row="1" Width="100" Margin="5" IsEnabled="True" Command="{Binding DisplayButton}">DISPLAY</Button>
+            <Button Grid.Row="0" Width="100" Margin="5" IsEnabled="True" Command="{Binding MeasureButton}">MEASURE</Button>
+            <Button Grid.Row="1" Width="100" Margin="5" IsEnabled="True" Command="{Binding ChartButton}">CHART</Button>
+            <Button Grid.Row="2" Width="100" Margin="5" IsEnabled="True" Command="{Binding DisplayButton}">DISPLAY</Button>
         </Grid>
     </Grid>
 </Window>

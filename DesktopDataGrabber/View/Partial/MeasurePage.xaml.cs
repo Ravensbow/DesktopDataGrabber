@@ -18,17 +18,21 @@ using System.Windows.Shapes;
 namespace DesktopDataGrabber.View.Partial
 {
     /// <summary>
-    /// Logika interakcji dla klasy PrzebiegiPage.xaml
+    /// Logika interakcji dla klasy MeasurePage.xaml
     /// </summary>
-    public partial class PrzebiegiPage : Page
+    public partial class MeasurePage : Page
     {
-        private PrzebiegiViewModel viewModel;
-        public PrzebiegiPage(IConfig c, IDataMeasure d)
+        private MeasureViewModel viewModel;
+        public MeasurePage(IConfig c, IDataMeasure d)
         {
-            viewModel = new PrzebiegiViewModel(c, d);
+            viewModel= new MeasureViewModel(c, d);
             DataContext = viewModel;
             InitializeComponent();
         }
-        
+        protected override async void OnRender(DrawingContext drawingContext)
+        {
+            await viewModel.GetData();
+            base.OnRender(drawingContext);
+        }
     }
 }

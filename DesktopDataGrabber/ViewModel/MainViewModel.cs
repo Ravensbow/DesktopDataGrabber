@@ -32,6 +32,7 @@ namespace DesktopDataGrabber.ViewModel
         #region Properties
         public ButtonCommand ChartButton { get; set; }
         public ButtonCommand DisplayButton { get; set; }
+        public ButtonCommand MeasureButton { get; set; }
         public Page page { get; set; }
         #endregion
 
@@ -45,9 +46,11 @@ namespace DesktopDataGrabber.ViewModel
         {
             ChartButton = new ButtonCommand(GoToChart);
             DisplayButton = new ButtonCommand(GoToLED);
+            MeasureButton = new ButtonCommand(GoToMeasure);
             config = c;
             panelLedService = pl;
-            page = new PrzebiegiPage(c,dm);
+            dataMeasureService = dm;
+            page = new MeasurePage(config,dataMeasureService);
         }
 
         #region ButtonCommands
@@ -59,6 +62,11 @@ namespace DesktopDataGrabber.ViewModel
         private void GoToLED()
         {
             page = new LEDPage(config,panelLedService);
+            OnPropertyChanged("page");
+        }
+        private void GoToMeasure()
+        {
+            page = new MeasurePage(config, dataMeasureService);
             OnPropertyChanged("page");
         }
 

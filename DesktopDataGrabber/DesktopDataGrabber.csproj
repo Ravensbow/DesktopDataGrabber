@@ -186,14 +186,22 @@
     <Compile Include="Tools\StringValueAttribute.cs" />
     <Compile Include="ViewModel\LEDViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
+    <Compile Include="ViewModel\MeasureViewModel.cs" />
     <Compile Include="ViewModel\PrzebiegiViewModel.cs" />
     <Compile Include="View\Partial\LEDPage.xaml.cs">
       <DependentUpon>LEDPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Partial\MeasurePage.xaml.cs">
+      <DependentUpon>MeasurePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Partial\PrzebiegiPage.xaml.cs">
       <DependentUpon>PrzebiegiPage.xaml</DependentUpon>
     </Compile>
     <Page Include="View\Partial\LEDPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Partial\MeasurePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

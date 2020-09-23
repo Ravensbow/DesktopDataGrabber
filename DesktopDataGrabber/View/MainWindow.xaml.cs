@@ -24,11 +24,17 @@ namespace DesktopDataGrabber.View
     public partial class MainWindow : Window
     {
         bool isMenuVisible = true;
+        IConfig config;
+        IPanelLED panelLED;
+        IDataMeasure dataMeasure;
 
         public MainWindow(IConfig c, IPanelLED pl, IDataMeasure dm)
         {
+            config = c;
+            panelLED = pl;
+            dataMeasure = dm;
             InitializeComponent();
-            DataContext = new MainViewModel(c,pl,dm);
+            DataContext = new MainViewModel(config,panelLED,dataMeasure);
         }
 
         private void MenuBtn_Click(object sender, RoutedEventArgs e)

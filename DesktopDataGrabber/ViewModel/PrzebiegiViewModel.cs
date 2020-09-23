@@ -66,6 +66,10 @@ namespace DesktopDataGrabber.ViewModel
                 }
             }
         }
+        ~PrzebiegiViewModel()
+        {
+            Cancle();
+        }
         
         public PlotModel DataPlotModel { get; set; }
         public ButtonCommand StartButton { get; set; }
@@ -78,11 +82,9 @@ namespace DesktopDataGrabber.ViewModel
 
         #region Fields
         private int timeStamp = 0;
-        private bool ploting = false;
         private IConfig config;
         private IDataMeasure dataMeasureService;
-        private Timer RequestTimer;
-        private IoTServer Server;
+        //private IoTServer Server;
         private System.Threading.CancellationTokenSource source { get; set; }
         private System.Threading.CancellationToken cts { get; set; }
         #endregion
@@ -140,17 +142,14 @@ namespace DesktopDataGrabber.ViewModel
             DataPlotModel.Series.Add(new LineSeries() { Title = "Preasure", Color = OxyColor.Parse("#FFFFFF00"), YAxisKey = "Press", XAxisKey = "Horizontal" });
             DataPlotModel.Series.Add(new LineSeries() { Title = "Humidity", Color = OxyColor.Parse("#FFFF0000"), YAxisKey = "Hum", XAxisKey = "Horizontal" });
 
-            StartButton = new ButtonCommand(StartTimer);
-            StartButtonAsync = new AsyncCommand(UpdatePlotAsync);
-            StopButton = new ButtonCommand(StopTimer);
+           
+            StartButtonAsync = new AsyncCommand(Start);
             StopButton2 = new ButtonCommand(Cancle);
             UpdateConfigButton = new ButtonCommand(UpdateConfig);
             DefaultConfigButton = new ButtonCommand(DefaultConfig);
 
             ipAddress = config.GetSettings().IpAddress;
             sampleTime = config.GetSettings().SampleTime;
-
-            Server = new IoTServer(IpAddress);
         }
 
         public async Task UpdatePlotAsync()
@@ -221,101 +220,15 @@ namespace DesktopDataGrabber.ViewModel
             DataPlotModel.InvalidatePlot(true);
         }
 
-        /**
-          * @brief Asynchronous chart update procedure with
-          *        data obtained from IoT server responses.
-          * @param ip IoT server IP address.
-          */
-        private async void UpdatePlotWithServerResponse()
-        {
-#if CLIENT
-#if GET
-            string responseText = await Server.GETwithClient();
-#else
-            string responseText = await Server.POSTwithClient();
-#endif
-#else
-#if GET
-            string responseText = await Server.GETwithRequest();
-#else
-            string responseText = await Server.POSTwithRequest();
-#endif
-#endif
-            try
-            {
-#if DYNAMIC
-                dynamic resposneJson = JObject.Parse(responseText);
-                UpdatePlot(timeStamp / 1000.0, (double)resposneJson.temperature, (double)resposneJson.pressure, (double)resposneJson.humidity);
-#else
-                ServerData resposneJson = JsonConvert.DeserializeObject<ServerData>(responseText);
-                UpdatePlot(timeStamp / 1000.0, resposneJson.data);
-#endif
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine("JSON DATA ERROR");
-                Debug.WriteLine(responseText);
-                Debug.WriteLine(e);
-            }
-
-            timeStamp += config.GetSettings().SampleTime;
-        }
-
-        /**
-          * @brief Synchronous procedure for request queries to the IoT server.
-          * @param sender Source of the event: RequestTimer.
-          * @param e An System.Timers.ElapsedEventArgs object that contains the event data.
-          */
-        private void RequestTimerElapsed(object sender, ElapsedEventArgs e)
-        {
-            UpdatePlotWithServerResponse();
-        }
-
         #region ButtonCommands
 
-        /**
-         * @brief RequestTimer start procedure.
-         */
-        private void StartTimer()
-        {
-            if (RequestTimer == null)
-            {
-                RequestTimer = new Timer(config.GetSettings().SampleTime);
-                RequestTimer.Elapsed += new ElapsedEventHandler(RequestTimerElapsed);
-                RequestTimer.Enabled = true;
-
-                DataPlotModel.ResetAllAxes();
-            }
-        }
-        
-        /**
-         * @brief RequestTimer stop procedure.
-         */
-        private void StopTimer()
-        {
-            if (RequestTimer != null)
-            {
-                RequestTimer.Enabled = false;
-                RequestTimer = null;
-            }
-        }
-
+      
         /**
          * @brief Configuration parameters update
          */
         private void UpdateConfig()
         {
-            bool restartTimer = (RequestTimer != null);
-
-            if (restartTimer)
-                StopTimer();
-
             config.ChangeSettings(new ConfigParams(ipAddress, sampleTime));
-
-            Server = new IoTServer(IpAddress);
-
-            if (restartTimer)
-                StartTimer();
         }
 
         /**
@@ -323,18 +236,9 @@ namespace DesktopDataGrabber.ViewModel
           */
         private void DefaultConfig()
         {
-            bool restartTimer = (RequestTimer != null);
-
-            if (restartTimer)
-                StopTimer();
-
             config.ChangeSettings(new ConfigParams());
             IpAddress = config.GetSettings().IpAddress;
             SampleTime = config.GetSettings().SampleTime.ToString();
-            Server = new IoTServer(IpAddress);
-
-            if (restartTimer)
-                StartTimer();
         }
 
         #endregion
