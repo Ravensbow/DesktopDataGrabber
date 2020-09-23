@@ -128,6 +128,7 @@
     <Reference Include="System.Windows.Controls.Layout.Toolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Infragistics.Themes.MetroLight.Wpf.1.0.0\lib\net40\System.Windows.Controls.Layout.Toolkit.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -174,8 +175,10 @@
     <Compile Include="Model\Joystick.cs" />
     <Compile Include="Model\LedMap.cs" />
     <Compile Include="Model\MeasureValues.cs" />
+    <Compile Include="Service\CancelTaskService.cs" />
     <Compile Include="Service\Config.cs" />
     <Compile Include="Service\DataMeasure.cs" />
+    <Compile Include="Service\ICancelTaskService.cs" />
     <Compile Include="Service\IConfig.cs" />
     <Compile Include="Service\IDataMeasure.cs" />
     <Compile Include="Service\IPanelLED.cs" />
@@ -184,10 +187,17 @@
     <Compile Include="Tools\ImageCreator.cs" />
     <Compile Include="Tools\InternetAvailability.cs" />
     <Compile Include="Tools\StringValueAttribute.cs" />
+    <Compile Include="ViewModel\JoystickViewModel.cs" />
     <Compile Include="ViewModel\LEDViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\MeasureViewModel.cs" />
     <Compile Include="ViewModel\PrzebiegiViewModel.cs" />
+    <Compile Include="View\NotificationWindow.xaml.cs">
+      <DependentUpon>NotificationWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Partial\JoystickPage.xaml.cs">
+      <DependentUpon>JoystickPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Partial\LEDPage.xaml.cs">
       <DependentUpon>LEDPage.xaml</DependentUpon>
     </Compile>
@@ -197,6 +207,14 @@
     <Compile Include="View\Partial\PrzebiegiPage.xaml.cs">
       <DependentUpon>PrzebiegiPage.xaml</DependentUpon>
     </Compile>
+    <Page Include="View\NotificationWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Partial\JoystickPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\Partial\LEDPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

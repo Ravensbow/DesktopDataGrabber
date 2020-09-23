@@ -23,9 +23,9 @@ namespace DesktopDataGrabber.View.Partial
     public partial class MeasurePage : Page
     {
         private MeasureViewModel viewModel;
-        public MeasurePage(IConfig c, IDataMeasure d)
+        public MeasurePage(IConfig c, IDataMeasure d, ICancelTaskService cts)
         {
-            viewModel= new MeasureViewModel(c, d);
+            viewModel = new MeasureViewModel(c, d,cts);
             DataContext = viewModel;
             InitializeComponent();
         }

@@ -18,17 +18,21 @@ using System.Windows.Shapes;
 namespace DesktopDataGrabber.View.Partial
 {
     /// <summary>
-    /// Logika interakcji dla klasy PrzebiegiPage.xaml
+    /// Logika interakcji dla klasy JoystickPage.xaml
     /// </summary>
-    public partial class PrzebiegiPage : Page
+    public partial class JoystickPage : Page
     {
-        private PrzebiegiViewModel viewModel;
-        public PrzebiegiPage(IConfig c, IDataMeasure d, ICancelTaskService cts)
+        private JoystickViewModel viewModel;
+        public JoystickPage(IConfig c, IDataMeasure d, ICancelTaskService cts)
         {
-            viewModel = new PrzebiegiViewModel(c, d, cts);
+            viewModel = new JoystickViewModel(c, d,cts);
             DataContext = viewModel;
             InitializeComponent();
         }
-        
+        protected override async void OnRender(DrawingContext drawingContext)
+        {
+            await viewModel.UpdateJoystickAsync();
+            base.OnRender(drawingContext);
+        }
     }
 }

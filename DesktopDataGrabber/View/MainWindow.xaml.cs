@@ -27,14 +27,16 @@ namespace DesktopDataGrabber.View
         IConfig config;
         IPanelLED panelLED;
         IDataMeasure dataMeasure;
+        ICancelTaskService cancelTaskService;
 
-        public MainWindow(IConfig c, IPanelLED pl, IDataMeasure dm)
+        public MainWindow(IConfig c, IPanelLED pl, IDataMeasure dm, ICancelTaskService cts)
         {
             config = c;
             panelLED = pl;
             dataMeasure = dm;
+            cancelTaskService = cts;
             InitializeComponent();
-            DataContext = new MainViewModel(config,panelLED,dataMeasure);
+            DataContext = new MainViewModel(config,panelLED,dataMeasure,cancelTaskService);
         }
 
         private void MenuBtn_Click(object sender, RoutedEventArgs e)

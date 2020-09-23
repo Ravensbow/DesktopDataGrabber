@@ -33,43 +33,55 @@ namespace DesktopDataGrabber.ViewModel
         public ButtonCommand ChartButton { get; set; }
         public ButtonCommand DisplayButton { get; set; }
         public ButtonCommand MeasureButton { get; set; }
+        public ButtonCommand JoystickButton { get; set; }
         public Page page { get; set; }
         #endregion
 
         #region Fields
         IConfig config;
         IPanelLED panelLedService;
-        IDataMeasure dataMeasureService; 
+        IDataMeasure dataMeasureService;
+        ICancelTaskService cancelTaskService;
         #endregion
 
-        public MainViewModel(IConfig c, IPanelLED pl, IDataMeasure dm)
+        public MainViewModel(IConfig c, IPanelLED pl, IDataMeasure dm, ICancelTaskService cts)
         {
             ChartButton = new ButtonCommand(GoToChart);
             DisplayButton = new ButtonCommand(GoToLED);
             MeasureButton = new ButtonCommand(GoToMeasure);
+            JoystickButton = new ButtonCommand(GoToJoystick);
             config = c;
             panelLedService = pl;
             dataMeasureService = dm;
-            page = new MeasurePage(config,dataMeasureService);
+            cancelTaskService = cts;
+            page = new MeasurePage(config,dataMeasureService,cancelTaskService);
         }
 
         #region ButtonCommands
         private void GoToChart()
         {
-            page = new PrzebiegiPage(config,dataMeasureService);
+            cancelTaskService.CancelAll();
+            page = new PrzebiegiPage(config,dataMeasureService, cancelTaskService);
             OnPropertyChanged("page");
         }
         private void GoToLED()
         {
+            cancelTaskService.CancelAll();
             page = new LEDPage(config,panelLedService);
             OnPropertyChanged("page");
         }
         private void GoToMeasure()
         {
-            page = new MeasurePage(config, dataMeasureService);
+            cancelTaskService.CancelAll();
+            page = new MeasurePage(config, dataMeasureService, cancelTaskService);
             OnPropertyChanged("page");
         }
-
+        private void GoToJoystick()
+        {
+            cancelTaskService.CancelAll();
+            page = new JoystickPage(config, dataMeasureService, cancelTaskService);
+            OnPropertyChanged("page");
+        }
         #endregion
 
         #region PropertyChanged

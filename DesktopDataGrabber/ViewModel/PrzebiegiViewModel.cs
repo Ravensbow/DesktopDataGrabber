@@ -66,11 +66,6 @@ namespace DesktopDataGrabber.ViewModel
                 }
             }
         }
-        ~PrzebiegiViewModel()
-        {
-            Cancle();
-        }
-        
         public PlotModel DataPlotModel { get; set; }
         public ButtonCommand StartButton { get; set; }
         public IAsyncCommand StartButtonAsync{ get; set; }
@@ -84,18 +79,18 @@ namespace DesktopDataGrabber.ViewModel
         private int timeStamp = 0;
         private IConfig config;
         private IDataMeasure dataMeasureService;
-        //private IoTServer Server;
-        private System.Threading.CancellationTokenSource source { get; set; }
-        private System.Threading.CancellationToken cts { get; set; }
+        private ICancelTaskService cancelTaskService;
+
+        private System.Threading.CancellationTokenSource source;
+        private System.Threading.CancellationToken cts;
         #endregion
 
-        public PrzebiegiViewModel(IConfig configuration, IDataMeasure dataMeasure)
+        public PrzebiegiViewModel(IConfig configuration, IDataMeasure dataMeasure, ICancelTaskService ctss)
         {
             config = configuration;
             dataMeasureService = dataMeasure;
+            cancelTaskService = ctss;
             DataPlotModel = new PlotModel { Title = "Przebiegi czasowe" };
-            source = new System.Threading.CancellationTokenSource();
-            cts = source.Token;
             DataPlotModel.Axes.Add(new LinearAxis()
             {
                 Position = AxisPosition.Bottom,
@@ -121,7 +116,7 @@ namespace DesktopDataGrabber.ViewModel
                 Minimum = 0,
                 Maximum = 4000,
                 Key = "Press",
-                Unit = "hPa",
+                Unit = "mbar",
                 Title = "preasure"
             });
             DataPlotModel.Axes.Add(new LinearAxis()
@@ -154,6 +149,9 @@ namespace DesktopDataGrabber.ViewModel
 
         public async Task UpdatePlotAsync()
         {
+            cancelTaskService.AddNew(new System.Threading.CancellationTokenSource(),"plot");
+            source = cancelTaskService.Get("plot");
+            cts = source.Token;
             while (true)
             {
                 if (cts.IsCancellationRequested)
@@ -185,10 +183,7 @@ namespace DesktopDataGrabber.ViewModel
         }
         public async Task Start()
         {
-            source = new System.Threading.CancellationTokenSource();
-            cts = source.Token;
             await UpdatePlotAsync();
-
         }
         /**
           * @brief Time series plot update procedure.

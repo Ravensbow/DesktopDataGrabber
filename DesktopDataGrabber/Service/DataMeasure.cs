@@ -1,4 +1,5 @@
 ﻿using DesktopDataGrabber.Model;
+using DesktopDataGrabber.View;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,8 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace DesktopDataGrabber.Service
 {
@@ -19,6 +22,7 @@ namespace DesktopDataGrabber.Service
         {
             config = c;
             client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(5);
             client.BaseAddress = new Uri($"{"http://" + config.GetSettings().IpAddress}/");
         }
 
@@ -26,26 +30,43 @@ namespace DesktopDataGrabber.Service
 
         public async Task<List<MeasureValues>> GetMeasureAsync()
         {
+            client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(5);
+            client.BaseAddress = new Uri($"{"http://" + config.GetSettings().IpAddress}/");
             if (IsConnected)
             {
                 try
                 {
                     var json = await client.GetByteArrayAsync($"api/measure.php");
                     string s = Encoding.UTF8.GetString(json);
-                    var data = await Task.Run(() => JsonConvert.DeserializeObject<List<MeasureValues>>(s));
-                    return data;
+                    if (s == null)
+                        throw new WebException("Brak odpowiedi z serwera.");
+                    else
+                    {
+                        var data = JsonConvert.DeserializeObject<List<MeasureValues>>(s);
+                        return data;
+                    }
                 }
                 catch (WebException e)
                 {
-                    //Alert
+                    ShowNotificationExecute(e.Message);
+                }
+                catch (HttpRequestException e)
+                {
+                    ShowNotificationExecute(e.Message);
+                }
+                catch (TaskCanceledException e)
+                {
+                    ShowNotificationExecute("Przekroczono limit czasu oczekiwania.");
                 }
                 catch (JsonException e)
                 {
-                    //Alert
+                    ShowNotificationExecute("Błędna odpowiedź serwera");
                 }
                 catch (Exception e)
                 {
-                    //Alert
+                    ShowNotificationExecute("Nieznany wyjątek. "+e.Message);
+                    return null;
                 }
 
             }
@@ -59,7 +80,24 @@ namespace DesktopDataGrabber.Service
             return new MeasureValues();
         }
 
+        private void ShowNotificationExecute(string message)
+        {
+            App.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(
+                () =>
+                {
+                    foreach (Window window in System.Windows.Application.Current.Windows)
+                    {
+                        string windowName = window.GetType().Name;
 
+                        if (windowName.Equals("NotificationWindow"))
+                        {
+                            return;
+                        }
+                    }
+                    var notify = new NotificationWindow();
+                    notify.Show(message);
+                }));
+        }
         public async Task<Joystick> GetJoystickAsync()
         {
             if (IsConnected)

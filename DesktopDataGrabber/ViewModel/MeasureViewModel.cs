@@ -25,6 +25,7 @@ namespace DesktopDataGrabber.ViewModel
     {
         private IConfig config;
         private IDataMeasure dataMeasureService;
+        private ICancelTaskService cancelTaskService;
 
         
         private CancellationTokenSource source;
@@ -46,19 +47,16 @@ namespace DesktopDataGrabber.ViewModel
             }
         }
 
-        public MeasureViewModel(IConfig configuration, IDataMeasure dataMeasure)
+        public MeasureViewModel(IConfig configuration, IDataMeasure dataMeasure, ICancelTaskService cts)
         {
             config = configuration;
-            dataMeasureService = dataMeasure;          
+            dataMeasureService = dataMeasure;
+            cancelTaskService = cts;
         }
-        ~MeasureViewModel()
-        {
-            Cancle();
-        }
-
         public async Task GetData()
         {
-            source = new CancellationTokenSource();
+            cancelTaskService.AddNew(new CancellationTokenSource(), "measure");
+            source = cancelTaskService.Get("measure");
             cts = source.Token;
             while (true)
             {

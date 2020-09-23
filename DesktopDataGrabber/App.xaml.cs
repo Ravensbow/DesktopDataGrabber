@@ -40,6 +40,7 @@ namespace DesktopDataGrabber
         private void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IConfig, Config>();
+            services.AddSingleton<ICancelTaskService, CancelTaskService>();
             services.AddTransient<IPanelLED, PanelLED>();
             services.AddTransient<IDataMeasure, DataMeasure>();
             services.AddTransient(typeof(MainWindow));
