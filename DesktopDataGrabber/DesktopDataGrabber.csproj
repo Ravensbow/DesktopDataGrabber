@@ -171,7 +171,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Model\IoTServer.cs" />
     <Compile Include="Model\Joystick.cs" />
     <Compile Include="Model\LedMap.cs" />
     <Compile Include="Model\MeasureValues.cs" />
@@ -283,7 +282,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\ConfigParams.cs" />
-    <Compile Include="Model\ServerData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
